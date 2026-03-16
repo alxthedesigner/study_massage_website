@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — MT Exam Prep</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+</head>
+<body class="login-page">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-brand">
+        <span class="login-brand-dot"></span>
+        MT Exam Prep
+      </div>
+      <h2 class="login-title">Welcome back</h2>
+      <p class="login-sub">Sign in with your email and the shared study password.</p>
+
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="emailInput">Email address</label>
+          <div class="input-wrap">
+            <input type="email" id="emailInput" autocomplete="email" placeholder="you@example.com" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="pwInput">Password</label>
+          <div class="input-wrap">
+            <input type="password" id="pwInput" autocomplete="current-password" placeholder="Enter password" required>
+          </div>
+        </div>
+        <div id="loginError" class="login-error" style="display:none"></div>
+        <button type="submit" class="login-btn" id="submitBtn">
+          <span id="submitLabel">Sign in</span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { checkWhitelist } from './js/modules/supabase.js?v=3';
+
+    const SHARED_PASSWORD = '2508D1';
+
+    // Already logged in — skip to app
+    if (localStorage.getItem('mt_session')) {
+      window.location.replace('index.html');
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const email     = document.getElementById('emailInput').value.trim().toLowerCase();
+      const pw        = document.getElementById('pwInput').value;
+      const errEl     = document.getElementById('loginError');
+      const submitBtn = document.getElementById('submitBtn');
+
+      errEl.style.display = 'none';
+      errEl.textContent = '';
+
+      if (pw.trim() !== SHARED_PASSWORD) {
+        errEl.textContent = 'Incorrect password.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      document.getElementById('submitLabel').textContent = 'Checking\u2026';
+      submitBtn.disabled = true;
+
+      try {
+        const allowed = await checkWhitelist(email);
+        if (!allowed) {
+          errEl.textContent = 'Email not authorised. Contact the study group admin.';
+          errEl.style.display = 'block';
+          document.getElementById('submitLabel').textContent = 'Sign in';
+          submitBtn.disabled = false;
+          return;
+        }
+        localStorage.setItem('mt_session', btoa(unescape(encodeURIComponent(email + ':' + Date.now()))));
+        localStorage.setItem('mt_user_email', email);
+        window.location.href = 'index.html';
+      } catch (err) {
+        errEl.textContent = 'Error: ' + (err.message || 'Network error \u2014 please try again.');
+        errEl.style.display = 'block';
+        document.getElementById('submitLabel').textContent = 'Sign in';
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
