@@ -83,7 +83,11 @@
         [CONDITIONS, ROM_REFERENCE] = await Promise.all([fetchConditions(), fetchROMReference()]);
         buildList();
         const urlParam = new URLSearchParams(window.location.search).get('condition');
-        if (urlParam && CONDITIONS.find(c => c.id === urlParam)) loadCondition(urlParam);
+        if (urlParam && CONDITIONS.find(c => c.id === urlParam)) {
+          loadCondition(urlParam);
+        } else if (CONDITIONS.length) {
+          loadCondition(CONDITIONS[0].id);
+        }
       } catch (e) {
         document.getElementById('conditionList').innerHTML =
           `<div style="padding:16px;color:var(--color-danger);font-size:.85rem">Error loading. Check connection.</div>`;
@@ -156,7 +160,6 @@
           <h2 class="condition-title">${c.name}</h2>
           <div class="condition-tags">
             <span class="badge ${getBadgeClass(c.region)}">${getRegionLabel(c.region)}</span>
-            ${c.tags.map(t => `<span class="tag">${t}</span>`).join('')}
           </div>
         </div>
         <div class="condition-actions">
@@ -167,17 +170,20 @@
 
       <div class="tabs">
         <button class="tab-btn active" data-tab="overview">Overview</button>
-        <button class="tab-btn" data-tab="symptoms">Symptoms</button>
-        <button class="tab-btn" data-tab="causes">Causes</button>
+        <button class="tab-btn" data-tab="symptoms">Signs &amp; Symptoms</button>
+        <button class="tab-btn" data-tab="objectives">Treatments (Tx)</button>
         <button class="tab-btn" data-tab="contra">Contraindications</button>
-        <button class="tab-btn" data-tab="objectives">Tx Objectives</button>
       </div>
 
-      <!-- OVERVIEW: definition + location -->
+      <!-- OVERVIEW: definition + muscle groups + causes -->
       <div class="tab-panel active" id="panel-overview">
         <div class="panel-section">
           <div class="panel-section-title">&#128218; Definition</div>
           <p class="panel-summary">${c.definition || '<em style="color:var(--color-text-dim)">Not yet available.</em>'}</p>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">&#9888; Possible Causes</div>
+          ${list(c.causes || [], '&#9679;')}
         </div>
         <div class="panel-section">
           <div class="panel-section-title">&#129504; Affected Muscle Groups</div>
@@ -190,7 +196,7 @@
         </div>
       </div>
 
-      <!-- SYMPTOMS -->
+      <!-- SIGNS & SYMPTOMS -->
       <div class="tab-panel" id="panel-symptoms">
         <div class="panel-section">
           <div class="panel-section-title">&#129354; Common Signs &amp; Symptoms</div>
@@ -200,11 +206,39 @@
         </div>
       </div>
 
-      <!-- CAUSES -->
-      <div class="tab-panel" id="panel-causes">
+      <!-- TREATMENTS (TX) -->
+      <div class="tab-panel" id="panel-objectives">
         <div class="panel-section">
-          <div class="panel-section-title">&#9888; Possible Causes</div>
-          ${list(c.causes || [], '&#9679;')}
+          <div class="panel-section-title">&#127919; Treatment Goals</div>
+          ${c.treatment_objectives?.length
+            ? list(c.treatment_objectives, '&#10003;')
+            : '<em style="color:var(--color-text-dim)">Not yet available.</em>'}
+        </div>
+        ${c.specialTests?.length ? `
+        <div class="panel-section">
+          <div class="panel-section-title">&#128270; Special Tests</div>
+          <div class="scroll-x">
+            <table class="rom-ref-table">
+              <thead>
+                <tr><th>Test Name</th><th>Procedure</th><th>Positive Indicates</th></tr>
+              </thead>
+              <tbody>
+                ${c.specialTests.map(t => `<tr>
+                  <td><strong>${t.name}</strong></td>
+                  <td style="font-size:.82rem;color:var(--color-text-muted)">${t.procedure}</td>
+                  <td style="font-size:.82rem;color:var(--color-danger)">${t.indicates}</td>
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>` : ''}
+        <div class="panel-section">
+          <div class="panel-section-title">&#9874; Treatment Techniques</div>
+          <em style="color:var(--color-text-muted)">Refer to CMT packet for the full treatment - I aint writing all that!</em>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">&#127968; Post-Treatment</div>
+          <em style="color:var(--color-text-muted)">Refer to CMT packet for the full treatment - I aint writing all that!</em>
         </div>
       </div>
 
@@ -214,29 +248,19 @@
           <div class="panel-section-title">&#128721; Contraindications</div>
           ${(c.contraindications?.absolute || []).length ? `
           <div class="contra-block contra-absolute">
-            <div class="contra-block-title">&#128721; Absolute</div>
+            <div class="contra-block-title">&#128721; Absolute Contraindication</div>
             ${list(c.contraindications.absolute, '&#9888;')}
           </div>` : ''}
           ${(c.contraindications?.relative || []).length ? `
           <div class="contra-block contra-relative">
-            <div class="contra-block-title">&#9888; Relative</div>
+            <div class="contra-block-title">&#9888; Contraindication</div>
             ${list(c.contraindications.relative, '&#9679;')}
           </div>` : ''}
           ${(c.contraindications?.massageSpecific || []).length ? `
           <div class="contra-block contra-massage">
-            <div class="contra-block-title">&#128077; Massage-Specific</div>
+            <div class="contra-block-title">&#128077; Notes/FYI</div>
             ${list(c.contraindications.massageSpecific, '&#9679;')}
           </div>` : ''}
-        </div>
-      </div>
-
-      <!-- TREATMENT OBJECTIVES -->
-      <div class="tab-panel" id="panel-objectives">
-        <div class="panel-section">
-          <div class="panel-section-title">&#127919; Treatment Objectives</div>
-          ${c.treatment_objectives?.length
-            ? list(c.treatment_objectives, '&#10003;')
-            : '<em style="color:var(--color-text-dim)">Not yet available.</em>'}
         </div>
       </div>
 
@@ -261,7 +285,7 @@
         byPart[r.body_part].push(r);
       });
 
-      const partOrder = ['Cervical','Scapula','Shoulder','Elbow','Wrist','Hip','Knee','Ankle'];
+      const partOrder = ['Cervical','Shoulder','Elbow','Wrist','Hip','Knee','Ankle'];
       const sections = partOrder.filter(p => byPart[p]).map(part => `
         <div class="panel-section">
           <div class="panel-section-title">${part}</div>
@@ -270,17 +294,17 @@
               <thead>
                 <tr>
                   <th>Movement</th>
-                  <th>Normal Range</th>
+                  <th>Normal Range (AROM)</th>
                   <th>End-Feel (PROM)</th>
-                  <th>Notes</th>
+                  <th>Muscles Tested (MRT)</th>
                 </tr>
               </thead>
               <tbody>
                 ${byPart[part].map(r => `<tr>
                   <td>${r.movement}</td>
-                  <td class="ref-val">${r.normal_min != null ? (r.normal_max === 0 ? '0\xB0' : r.normal_min + '\u2013' + r.normal_max + '\xB0') : '\u2014'}</td>
+                  <td class="ref-val">${r.normal_min != null ? (r.normal_min > 0 ? r.normal_min + '\u2013' + r.normal_max + '\xB0' : r.normal_max + '\xB0') : '\u2014'}</td>
                   <td style="font-size:.82rem;color:var(--color-text)">${r.end_feel || '\u2014'}</td>
-                  <td style="color:var(--color-text-muted);font-size:.82rem">${r.notes || ''}</td>
+                  <td style="color:var(--color-text-muted);font-size:.82rem">${r.muscles_tested || ''}</td>
                 </tr>`).join('')}
               </tbody>
             </table>
