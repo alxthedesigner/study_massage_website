@@ -25,14 +25,12 @@
     <a href="index.html" class="nav-brand">Conditions &amp; ROM</a>
     <div class="nav-links">
       <a href="study.html" class="nav-link active">Study</a>
-      <a href="treatment.html" class="nav-link">SOAP Notes</a>
       <button class="btn btn-secondary nav-logout" id="navLogout">Sign Out</button>
     </div>
     <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu">&#9776;</button>
   </nav>
   <div class="nav-mobile-menu" id="navMobileMenu">
     <a href="study.html" class="nav-mobile-link">Study</a>
-    <a href="treatment.html" class="nav-mobile-link">SOAP Notes</a>
     <button class="nav-mobile-link" id="navLogoutMobile" style="background:none;border:none;text-align:left;cursor:pointer;color:var(--color-text-muted);width:100%;padding:var(--space-3) 0;border-bottom:1px solid var(--color-border)">Sign Out</button>
   </div>
 
@@ -164,9 +162,7 @@
             <span class="badge ${getBadgeClass(c.region)}">${getRegionLabel(c.region)}</span>
           </div>
         </div>
-        <div class="condition-actions">
-          <a href="treatment.html?condition=${c.id}" class="btn btn-primary btn-sm">&#127919; Treat</a>
-        </div>
+        <div class="condition-actions"></div>
       </div>
 
       <div class="tabs">
