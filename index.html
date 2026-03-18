@@ -25,7 +25,6 @@
     <div class="nav-brand">MT Exam Prep</div>
     <div class="nav-links">
       <a href="study.html" class="nav-link">Study</a>
-      <span class="nav-link nav-link-disabled">Challenge</span>
       <a href="treatment.html" class="nav-link">SOAP Notes</a>
       <button class="btn btn-secondary nav-logout" id="navLogout">Sign Out</button>
     </div>
@@ -33,13 +32,9 @@
   </nav>
   <div class="nav-mobile-menu" id="navMobileMenu">
     <a href="study.html" class="nav-mobile-link">Study</a>
-    <span class="nav-mobile-link nav-link-disabled">Challenge</span>
     <a href="treatment.html" class="nav-mobile-link">SOAP Notes</a>
     <button class="nav-mobile-link" id="navLogoutMobile" style="background:none;border:none;text-align:left;cursor:pointer;color:var(--color-text-muted);width:100%;padding:var(--space-3) 0;border-bottom:1px solid var(--color-border)">Sign Out</button>
   </div>
-
-  <!-- Toast notification -->
-  <div id="toast" style="position:fixed;bottom:var(--space-6);left:50%;transform:translateX(-50%) translateY(20px);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3) var(--space-5);font-size:.9rem;color:var(--color-text);box-shadow:0 8px 32px rgba(0,0,0,0.4);opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap;z-index:2000">&#9889; Challenge Mode — Coming Soon</div>
 
   <main class="home-main">
     <div class="hero">
@@ -51,20 +46,13 @@
       <a href="study.html" class="mode-card">
         <div class="mode-card-icon">&#128214;</div>
         <h2 class="mode-card-title">Study Mode</h2>
-        <p class="mode-card-desc">Browse all 8 exam conditions. Review ROM, AROM, PROM, MRT, end-feel, causes, contraindications, muscle groups, and special tests.</p>
+        <p class="mode-card-desc">Browse all exam conditions. Review ROM, AROM, PROM, MRT, end-feel, causes, contraindications, muscle groups, and special tests.</p>
         <span class="mode-card-cta">Start Studying &rarr;</span>
       </a>
 
-      <div class="mode-card mode-card-disabled" id="challengeCard" style="cursor:pointer">
-        <div class="mode-card-icon">&#9889;</div>
-        <h2 class="mode-card-title">Challenge Mode</h2>
-        <p class="mode-card-desc">Coming soon — quiz yourself on conditions, causes, affected areas, and treatment objectives.</p>
-        <span class="mode-card-cta" style="color:var(--color-text-dim)">Coming Soon</span>
-      </div>
-
       <a href="treatment.html" class="mode-card">
         <div class="mode-card-icon">&#127919;</div>
-        <h2 class="mode-card-title">Treatment Planner</h2>
+        <h2 class="mode-card-title">SOAP Notes</h2>
         <p class="mode-card-desc">Build complete treatment plans. Practice identifying what to treat, how to treat it, positioning, frequency, and contraindication review.</p>
         <span class="mode-card-cta">Plan a Treatment &rarr;</span>
       </a>
@@ -76,12 +64,8 @@
         <span class="stat-label">Conditions Studied</span>
       </div>
       <div class="stat-item">
-        <span class="stat-num">8</span>
+        <span class="stat-num">4</span>
         <span class="stat-label">Exam Conditions</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-num" id="statScore">—</span>
-        <span class="stat-label">Best Challenge Score</span>
       </div>
     </div>
   </main>
@@ -91,33 +75,10 @@
     import { logout } from './js/modules/auth.js';
     document.getElementById('navLogout').addEventListener('click', logout);
     document.getElementById('navLogoutMobile').addEventListener('click', logout);
-
-    function showToast() {
-      const t = document.getElementById('toast');
-      t.style.opacity = '1';
-      t.style.transform = 'translateX(-50%) translateY(0)';
-      clearTimeout(t._timer);
-      t._timer = setTimeout(() => {
-        t.style.opacity = '0';
-        t.style.transform = 'translateX(-50%) translateY(20px)';
-      }, 2800);
-    }
-
-    document.getElementById('challengeCard').addEventListener('click', showToast);
-    document.querySelectorAll('.nav-link-disabled').forEach(el => {
-      el.style.cursor = 'pointer';
-      el.addEventListener('click', showToast);
-    });
     const progress = loadProgress();
     const studied = Object.values(progress).filter(p => p.studied).length;
     document.getElementById('statStudied').textContent = studied;
-    const scores = Object.values(progress).map(p => p.bestScore).filter(Boolean);
-    if (scores.length) {
-      const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-      document.getElementById('statScore').textContent = avg + '%';
-    }
 
-    // Hamburger
     document.getElementById('navHamburger').addEventListener('click', () => {
       document.getElementById('navMobileMenu').classList.toggle('open');
     });

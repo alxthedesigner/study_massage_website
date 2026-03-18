@@ -25,7 +25,6 @@
     <a href="index.html" class="nav-brand">MT Exam Prep</a>
     <div class="nav-links">
       <a href="study.html" class="nav-link">Study</a>
-      <span class="nav-link nav-link-disabled">Challenge</span>
       <a href="treatment.html" class="nav-link active">SOAP Notes</a>
       <button class="btn btn-secondary nav-logout" id="navLogout">Sign Out</button>
     </div>
@@ -33,7 +32,6 @@
   </nav>
   <div class="nav-mobile-menu" id="navMobileMenu">
     <a href="study.html" class="nav-mobile-link">Study</a>
-    <span class="nav-mobile-link nav-link-disabled">Challenge</span>
     <a href="treatment.html" class="nav-mobile-link">SOAP Notes</a>
     <button class="nav-mobile-link" id="navLogoutMobile" style="background:none;border:none;text-align:left;cursor:pointer;color:var(--color-text-muted);width:100%;padding:var(--space-3) 0;border-bottom:1px solid var(--color-border)">Sign Out</button>
   </div>
@@ -531,11 +529,6 @@
 
     document.getElementById('navHamburger').addEventListener('click', () => {
       document.getElementById('navMobileMenu').classList.toggle('open');
-    });
-
-    document.querySelectorAll('.nav-link-disabled').forEach(el => {
-      el.style.cursor = 'pointer';
-      el.addEventListener('click', () => showToast('&#9889; Challenge Mode — Coming Soon'));
     });
 
     init();

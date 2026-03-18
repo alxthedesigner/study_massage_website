@@ -25,7 +25,6 @@
     <a href="index.html" class="nav-brand">MT Exam Prep</a>
     <div class="nav-links">
       <a href="study.html" class="nav-link active">Study</a>
-      <span class="nav-link nav-link-disabled">Challenge</span>
       <a href="treatment.html" class="nav-link">SOAP Notes</a>
       <button class="btn btn-secondary nav-logout" id="navLogout">Sign Out</button>
     </div>
@@ -33,13 +32,9 @@
   </nav>
   <div class="nav-mobile-menu" id="navMobileMenu">
     <a href="study.html" class="nav-mobile-link">Study</a>
-    <span class="nav-mobile-link nav-link-disabled">Challenge</span>
     <a href="treatment.html" class="nav-mobile-link">SOAP Notes</a>
     <button class="nav-mobile-link" id="navLogoutMobile" style="background:none;border:none;text-align:left;cursor:pointer;color:var(--color-text-muted);width:100%;padding:var(--space-3) 0;border-bottom:1px solid var(--color-border)">Sign Out</button>
   </div>
-
-  <!-- Toast notification -->
-  <div id="toast" style="position:fixed;bottom:var(--space-6);left:50%;transform:translateX(-50%) translateY(20px);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3) var(--space-5);font-size:.9rem;color:var(--color-text);box-shadow:0 8px 32px rgba(0,0,0,0.4);opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap;z-index:2000">&#9889; Challenge Mode — Coming Soon</div>
 
   <div class="study-layout">
     <aside class="sidebar">
@@ -78,17 +73,6 @@
     import { logout } from './js/modules/auth.js';
     document.getElementById('navLogout').addEventListener('click', logout);
     document.getElementById('navLogoutMobile').addEventListener('click', logout);
-
-    function showToast() {
-      const t = document.getElementById('toast');
-      t.style.opacity = '1';
-      t.style.transform = 'translateX(-50%) translateY(0)';
-      clearTimeout(t._timer);
-      t._timer = setTimeout(() => {
-        t.style.opacity = '0';
-        t.style.transform = 'translateX(-50%) translateY(20px)';
-      }, 2800);
-    }
 
     let CONDITIONS = [];
     let ROM_REFERENCE = [];
@@ -181,7 +165,6 @@
           </div>
         </div>
         <div class="condition-actions">
-          <button class="btn btn-secondary btn-sm" onclick="showToast()">&#9889; Challenge</button>
           <a href="treatment.html?condition=${c.id}" class="btn btn-primary btn-sm">&#127919; Treat</a>
         </div>
       </div>
@@ -390,12 +373,6 @@
 
     document.getElementById('navHamburger').addEventListener('click', () => {
       document.getElementById('navMobileMenu').classList.toggle('open');
-    });
-
-    // Challenge nav links → toast
-    document.querySelectorAll('.nav-link-disabled').forEach(el => {
-      el.style.cursor = 'pointer';
-      el.addEventListener('click', showToast);
     });
 
     init();
