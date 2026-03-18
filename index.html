@@ -10,6 +10,17 @@
 </head>
 <script>if(!localStorage.getItem('mt_session'))window.location.replace('login.html');</script>
 <body class="home-page">
+  <div id="updateBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;text-align:center;padding:6px var(--space-4);background:linear-gradient(90deg,#1a4d2e,#226b3f,#1a4d2e);color:#7effa0;font-size:.78rem;font-weight:600;letter-spacing:.04em;border-bottom:1px solid rgba(126,255,160,0.25);box-shadow:0 2px 12px rgba(34,107,63,0.4)"></div>
+  <script>
+    fetch('version.json?nocache=' + Date.now())
+      .then(r => r.json())
+      .then(d => {
+        const b = document.getElementById('updateBanner');
+        b.textContent = '✦ Last Updated: ' + d.lastUpdated;
+        b.style.display = 'block';
+        document.body.style.paddingTop = b.offsetHeight + 'px';
+      }).catch(() => {});
+  </script>
   <nav class="navbar">
     <div class="nav-brand">MT Exam Prep</div>
     <div class="nav-links">

@@ -10,6 +10,17 @@
 </head>
 <script>if(!localStorage.getItem('mt_session'))window.location.replace('login.html');</script>
 <body>
+  <div id="updateBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;text-align:center;padding:6px var(--space-4);background:linear-gradient(90deg,#1a4d2e,#226b3f,#1a4d2e);color:#7effa0;font-size:.78rem;font-weight:600;letter-spacing:.04em;border-bottom:1px solid rgba(126,255,160,0.25);box-shadow:0 2px 12px rgba(34,107,63,0.4)"></div>
+  <script>
+    fetch('version.json?nocache=' + Date.now())
+      .then(r => r.json())
+      .then(d => {
+        const b = document.getElementById('updateBanner');
+        b.textContent = '✦ Last Updated: ' + d.lastUpdated;
+        b.style.display = 'block';
+        document.body.style.paddingTop = b.offsetHeight + 'px';
+      }).catch(() => {});
+  </script>
   <nav class="navbar">
     <a href="index.html" class="nav-brand">MT Exam Prep</a>
     <div class="nav-links">
@@ -32,14 +43,21 @@
 
   <div class="study-layout">
     <aside class="sidebar">
-      <div class="sidebar-search">
-        <input type="text" id="searchInput" placeholder="Search conditions..." autocomplete="off">
+      <div class="sidebar-mode-tabs">
+        <button class="sidebar-mode-tab active" id="tabConditions">&#128214; Conditions</button>
+        <button class="sidebar-mode-tab" id="tabROM">&#128208; ROM Reference</button>
       </div>
-      <div class="sidebar-list" id="conditionList">
-        <div style="padding:16px;color:var(--color-text-muted);font-size:.88rem">Loading...</div>
+      <div id="conditionsPanel">
+        <div class="sidebar-search">
+          <input type="text" id="searchInput" placeholder="Search conditions..." autocomplete="off">
+        </div>
+        <div class="sidebar-list" id="conditionList">
+          <div style="padding:16px;color:var(--color-text-muted);font-size:.88rem">Loading...</div>
+        </div>
       </div>
-      <div class="sidebar-footer">
-        <button class="btn btn-secondary btn-sm" id="btnShowROM" style="width:100%">&#128208; ROM Reference</button>
+      <div id="romPanel" style="display:none">
+        <div style="padding:var(--space-3) var(--space-4) var(--space-2);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-dim)">Jump to region</div>
+        <div id="romNavList" class="sidebar-list"></div>
       </div>
     </aside>
 
@@ -267,27 +285,76 @@
       `;
     }
 
-    // ── ROM Reference ─────────────────────────────────────────────
-    document.getElementById('btnShowROM').addEventListener('click', () => {
+    // ── Sidebar mode tabs ─────────────────────────────────────────
+    document.getElementById('tabConditions').addEventListener('click', () => {
+      document.getElementById('tabConditions').classList.add('active');
+      document.getElementById('tabROM').classList.remove('active');
+      document.getElementById('conditionsPanel').style.display = 'block';
+      document.getElementById('romPanel').style.display = 'none';
+      document.getElementById('romReference').style.display = 'none';
+      if (activeId) {
+        document.getElementById('conditionDetail').style.display = 'block';
+        document.getElementById('studyEmpty').style.display = 'none';
+      } else {
+        document.getElementById('studyEmpty').style.display = 'flex';
+      }
+    });
+
+    document.getElementById('tabROM').addEventListener('click', () => {
+      document.getElementById('tabROM').classList.add('active');
+      document.getElementById('tabConditions').classList.remove('active');
+      document.getElementById('conditionsPanel').style.display = 'none';
+      document.getElementById('romPanel').style.display = 'block';
       document.getElementById('studyEmpty').style.display = 'none';
       document.getElementById('conditionDetail').style.display = 'none';
-      activeId = null;
-      buildList();
       const el = document.getElementById('romReference');
       el.style.display = 'block';
       el.innerHTML = renderROMReference();
+      buildROMNav();
     });
 
+    function buildROMNav() {
+      const partOrder = ['Cervical','Shoulder','Elbow','Wrist','Hip','Knee','Ankle'];
+      const available = partOrder.filter(p => ROM_REFERENCE.some(r => r.body_part === p));
+      const nav = document.getElementById('romNavList');
+      nav.innerHTML = available.map(part => `
+        <div class="condition-list-item rom-nav-item" data-part="${part}">${part}</div>
+      `).join('');
+      nav.querySelectorAll('.rom-nav-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          nav.querySelectorAll('.rom-nav-item').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const anchor = document.getElementById('rom-section-' + btn.dataset.part.toLowerCase());
+          if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+
     function renderROMReference() {
+      const MOVEMENT_ORDER = [
+        'flexion','extension','medial rotation','lateral rotation',
+        'abduction','adduction','horizontal abduction','horizontal adduction',
+        'lateral abduction','lateral adduction','lateral flexion'
+      ];
+
+      function movementIndex(name) {
+        const lower = (name || '').toLowerCase();
+        const idx = MOVEMENT_ORDER.findIndex(m => lower.includes(m));
+        return idx === -1 ? 999 : idx;
+      }
+
       const byPart = {};
       ROM_REFERENCE.forEach(r => {
         if (!byPart[r.body_part]) byPart[r.body_part] = [];
         byPart[r.body_part].push(r);
       });
+      Object.keys(byPart).forEach(part => {
+        byPart[part].sort((a, b) => movementIndex(a.movement) - movementIndex(b.movement));
+      });
 
       const partOrder = ['Cervical','Shoulder','Elbow','Wrist','Hip','Knee','Ankle'];
       const sections = partOrder.filter(p => byPart[p]).map(part => `
-        <div class="panel-section">
+        <div class="panel-section" id="rom-section-${part.toLowerCase()}">
           <div class="panel-section-title">${part}</div>
           <div class="scroll-x">
             <table class="rom-ref-table">
