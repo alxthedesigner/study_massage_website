@@ -75,11 +75,11 @@ function normalizeRow(row) {
     contraindications: row.contraindications || { absolute: [], relative: [], massageSpecific: [] },
     muscleGroups: row.muscle_groups || [],
     specialTests: row.special_tests || [],
-    treatmentHints: row.treatment_hints || { goals: [], techniques: [], positioning: '', frequency: '' },
+    treatmentHints: row.treatment_steps || { goals: [], techniques: [], positioning: '', frequency: '' },
     definition: row.definition || '',
     location: row.location || '',
     symptoms: row.symptoms || [],
     treatment_objectives: row.treatment_objectives || [],
-    home_care: row.home_care || []
+    home_care: row.post_treatment || []
   };
 }
